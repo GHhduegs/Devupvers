@@ -1,0 +1,129 @@
+import 'dart:io';
+import 'dart:async';
+
+// Item class
+class Item {
+  String name;
+  int quantity;
+  double price;
+
+  Item(this.name, this.quantity, this.price);
+
+  @override
+  String toString() => "$name | Qty: $quantity | Price: ₹$price";
+}
+class Inventory<T> {
+  final List<T> _items = [];
+
+  void addItem(T item) => _items.add(item);
+
+  void removeItem(String name) {
+    _items.removeWhere((item) =>
+        item is Item && item.name.toLowerCase() == name.toLowerCase());
+  }
+
+  void updateItem(String name, int qty, double price) {
+    for (var item in _items) {
+      if (item is Item && item.name.toLowerCase() == name.toLowerCase()) {
+        item.quantity = qty;
+        item.price = price;
+      }
+    }
+  }
+
+  T? searchItem(String name) {
+    for (var item in _items) {
+      if (item is Item && item.name.toLowerCase() == name.toLowerCase()) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  List<T> get allItems => _items;
+}
+
+// Async simulation
+Future<void> saveData() async {
+  stdout.write("Saving data");
+  for (int i = 0; i < 3; i++) {
+    await Future.delayed(Duration(milliseconds: 500));
+    stdout.write(".");
+  }
+  print("\n✅ Data saved successfully!");
+}
+
+
+void main() async {
+  var inventory = Inventory<Item>();
+  bool running = true;
+
+  while (running) {
+    print("\n====== Inventory Manager ======");
+    print("1. Add Item");
+    print("2. View All Items");
+    print("3. Update Item");
+    print("4. Remove Item");
+    print("5. Search Item");
+    print("6. Save & Exit");
+    stdout.write("Choose option: ");
+    String? choice = stdin.readLineSync();
+
+    switch (choice) {
+      case "1":
+        stdout.write("Enter item name: ");
+        String name = stdin.readLineSync()!;
+        stdout.write("Enter quantity: ");
+        int qty = int.tryParse(stdin.readLineSync()!) ?? 0;
+        stdout.write("Enter price: ");
+        double price = double.tryParse(stdin.readLineSync()!) ?? 0;
+        inventory.addItem(Item(name, qty, price));
+        print("✅ Item added!");
+        break;
+
+      case "2":
+        if (inventory.allItems.isEmpty) {
+          print("❌ Inventory is empty.");
+        } else {
+          print("---- All Items ----");
+          for (var item in inventory.allItems) {
+            print(item);
+          }
+        }
+        break;
+
+      case "3":
+        stdout.write("Enter item name to update: ");
+        String name = stdin.readLineSync()!;
+        stdout.write("Enter new quantity: ");
+        int qty = int.tryParse(stdin.readLineSync()!) ?? 0;
+        stdout.write("Enter new price: ");
+        double price = double.tryParse(stdin.readLineSync()!) ?? 0;
+        inventory.updateItem(name, qty, price);
+        print("✅ Item updated!");
+        break;
+
+      case "4":
+        stdout.write("Enter item name to remove: ");
+        String name = stdin.readLineSync()!;
+        inventory.removeItem(name);
+        print("✅ Item removed!");
+        break;
+
+      case "5":
+        stdout.write("Enter item name to search: ");
+        String name = stdin.readLineSync()!;
+        var result = inventory.searchItem(name);
+        print(result != null ? "🔎 Found: $result" : "❌ Item not found.");
+        break;
+
+      case "6":
+        await saveData();
+        running = false;
+        break;
+
+      default:
+        print("⚠️ Invalid choice, try again.");
+    }
+  }
+}
